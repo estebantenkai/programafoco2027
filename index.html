@@ -530,7 +530,7 @@ details p{padding:0 48px 26px 0;font-size:17px;font-weight:300;color:var(--sub);
    Pegar acá la URL del Apps Script cuando esté publicado.
    ========================================================= */
 (function(){
-  var ENDPOINT='';
+  var ENDPOINT='https://script.google.com/macros/s/AKfycby-q9GyebjpuNrwJzrUP4BFWPTIt1RvArt96YdAI1sbMpEqyN1mQ-gD9nODc5v4LVnr/exec';
   var modal=document.getElementById('info'),form=document.getElementById('f'),err=document.getElementById('ferr'),sub=document.getElementById('fsub');
   var vForm=document.getElementById('infoForm'),vOk=document.getElementById('infoOk'),lastFocus=null;
   function open(){lastFocus=document.activeElement;vForm.hidden=false;vOk.hidden=true;err.textContent='';modal.classList.add('on');document.body.style.overflow='hidden';setTimeout(function(){form.nombre.focus();},50);}

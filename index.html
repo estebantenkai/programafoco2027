@@ -203,6 +203,8 @@ details p{padding:0 48px 26px 0;font-size:17px;font-weight:300;color:var(--sub);
 .mbox form{margin-top:22px;display:grid;gap:14px}
 .mbox label{display:grid;gap:6px;font-size:13.5px;font-weight:700;color:var(--ink)}
 .mbox input[type=text],.mbox input[type=email],.mbox input[type=tel]{font:inherit;font-weight:400;font-size:16px;padding:14px 16px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);width:100%}
+.mbox select{font:inherit;font-weight:400;font-size:16px;padding:14px 16px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);width:100%}
+.mbox select:focus{outline:none;border-color:var(--i);box-shadow:0 0 0 4px rgba(59,53,168,.14)}
 .mbox input:focus{outline:none;border-color:var(--i);box-shadow:0 0 0 4px rgba(59,53,168,.14)}
 .mbox .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .mbox .chk{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px;color:var(--sub);cursor:pointer}
@@ -366,6 +368,7 @@ details p{padding:0 48px 26px 0;font-size:17px;font-weight:300;color:var(--sub);
         <label>Nombre y apellido<input type="text" name="nombre" autocomplete="name" required></label>
         <label>Celular<input type="tel" name="celular" inputmode="tel" autocomplete="tel" placeholder="Ej: 11 2345 6789" required></label>
         <label>Mail<input type="email" name="mail" autocomplete="email" required></label>
+        <label>País<select name="pais" autocomplete="country-name"><option>Argentina</option><option>Chile</option><option>Uruguay</option><option>Paraguay</option><option>Bolivia</option><option>Perú</option><option>Colombia</option><option>Ecuador</option><option>Venezuela</option><option>México</option><option>Costa Rica</option><option>Panamá</option><option>República Dominicana</option><option>Brasil</option><option>España</option><option>Estados Unidos</option><option>Otro país</option></select></label>
         <label class="chk"><input type="checkbox" name="cliente"> Ya trabajé con Tenkai</label>
         <input class="hp" type="text" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
         <p class="ferr" id="ferr" role="alert"></p>
@@ -533,6 +536,11 @@ details p{padding:0 48px 26px 0;font-size:17px;font-weight:300;color:var(--sub);
   var ENDPOINT='https://script.google.com/macros/s/AKfycby-q9GyebjpuNrwJzrUP4BFWPTIt1RvArt96YdAI1sbMpEqyN1mQ-gD9nODc5v4LVnr/exec';
   var modal=document.getElementById('info'),form=document.getElementById('f'),err=document.getElementById('ferr'),sub=document.getElementById('fsub');
   var vForm=document.getElementById('infoForm'),vOk=document.getElementById('infoOk'),lastFocus=null;
+  /* Preselecciona el país según la zona horaria del navegador (la persona puede cambiarlo) */
+  var TZ={'America/Argentina':'Argentina','America/Santiago':'Chile','America/Montevideo':'Uruguay','America/Asuncion':'Paraguay','America/La_Paz':'Bolivia','America/Lima':'Perú','America/Bogota':'Colombia','America/Guayaquil':'Ecuador','America/Caracas':'Venezuela','America/Mexico_City':'México','America/Monterrey':'México','America/Costa_Rica':'Costa Rica','America/Panama':'Panamá','America/Santo_Domingo':'República Dominicana','America/Sao_Paulo':'Brasil','Europe/Madrid':'España'};
+  function paisInicial(){try{var z=Intl.DateTimeFormat().resolvedOptions().timeZone||'';for(var k in TZ){if(z.indexOf(k)===0)return TZ[k];}if(z&&z.indexOf('America/')!==0&&z.indexOf('Europe/')!==0)return 'Otro país';}catch(e){}return 'Argentina';}
+  function setPais(){form.pais.value=paisInicial();}
+  setPais();
   function open(){lastFocus=document.activeElement;vForm.hidden=false;vOk.hidden=true;err.textContent='';modal.classList.add('on');document.body.style.overflow='hidden';setTimeout(function(){form.nombre.focus();},50);}
   function close(){modal.classList.remove('on');document.body.style.overflow='';if(lastFocus&&lastFocus.focus)lastFocus.focus();}
   [].forEach.call(document.querySelectorAll('[data-open="info"]'),function(b){b.addEventListener('click',open);});
@@ -542,15 +550,15 @@ details p{padding:0 48px 26px 0;font-size:17px;font-weight:300;color:var(--sub);
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('on'))close();});
   form.addEventListener('submit',function(e){
     e.preventDefault();err.textContent='';
-    var d={nombre:form.nombre.value.trim(),celular:form.celular.value.trim(),mail:form.mail.value.trim(),cliente:form.cliente.checked,web:form.web.value};
+    var d={nombre:form.nombre.value.trim(),celular:form.celular.value.trim(),mail:form.mail.value.trim(),pais:form.pais.value,cliente:form.cliente.checked,web:form.web.value};
     if(d.web)return;
     if(d.nombre.split(/\s+/).filter(Boolean).length<2){err.textContent='Completá tu nombre y apellido.';return;}
     if(d.celular.replace(/\D/g,'').length<8){err.textContent='Revisá el celular: parece incompleto.';return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.mail)){err.textContent='Revisá el mail: parece incompleto.';return;}
-    function ok(demo){document.getElementById('okmail').textContent=d.mail;document.getElementById('demo').hidden=!demo;vForm.hidden=true;vOk.hidden=false;form.reset();}
+    function ok(demo){document.getElementById('okmail').textContent=d.mail;document.getElementById('demo').hidden=!demo;vForm.hidden=true;vOk.hidden=false;form.reset();setPais();}
     sub.disabled=true;sub.textContent='Enviando…';
     if(!ENDPOINT){setTimeout(function(){sub.disabled=false;sub.textContent='Quiero conocer el valor';ok(true);},500);return;}
-    var payload={tipo:'pedido_info_foco',nombre:d.nombre,celular:d.celular,mail:d.mail,cliente:d.cliente,origen:location.href,fecha:new Date().toISOString()};
+    var payload={tipo:'pedido_info_foco',nombre:d.nombre,celular:d.celular,mail:d.mail,pais:d.pais,cliente:d.cliente,origen:location.href,fecha:new Date().toISOString()};
     fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
       .then(function(){sub.disabled=false;sub.textContent='Quiero conocer el valor';ok(false);})
       .catch(function(){sub.disabled=false;sub.textContent='Quiero conocer el valor';err.textContent='No pudimos enviar el pedido. Probá de nuevo o escribinos por WhatsApp.';});
